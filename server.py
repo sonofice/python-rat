@@ -1,5 +1,6 @@
 #from socket import socket, AF_INET, SOCK_DGRAM
-import socket
+import socket, os
+from getpass import getuser
 
 port = 64780
 host_IP = "127.0.0.1" # loopback
@@ -13,21 +14,26 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     with conn:
         while True:
 
-            try:
-                s.listen()
-                print("listening")
-                data = conn.recv(2048)
-                cmnd = data.decode()
+            s.listen()
+            print("listening")
+            data = conn.recv(2048)
+            print (data)
+            cmnd = data.decode()
+            print (str(cmnd))
 
-                if cmnd == "exit":
-                    print("exiting")
-                    break
-
-                print ("interrupted")
-
-
-                cmnd = cmnd.encode()
+            if str(cmnd.lower) == "exit":
+                print("exiting")
+                #cmnd = cmnd.encode()
                 conn.sendall(cmnd)
-            except cmnd.socketerror("interruptedfakka"):
                 break
+            elif str(cmnd.lower) == "listdir":
+                result = os.path.dirname(os.path.realpath(__file__))
+                print(result)  
+            elif str(cmnd.lower) == "user":
+                result = os.getlogin()
+                print(result)
+                
+            else:
+                result = "passing"
 
+            conn.sendall(result.encode())

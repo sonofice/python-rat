@@ -1,10 +1,13 @@
 #from socket import socket, AF_INET, SOCK_DGRAM
-import socket
-from os import system
+import socket, os
 
 # IP & port of the server
 
+
+
 def run_connection():
+
+    simple_cmd = ["listdir", "user", "systeminfo", "pwd", "upload", "download", "shell", "clear"]
 
     server_ip = "127.0.0.1" # replace with server IP
     port = 64780 # replace with server port
@@ -16,23 +19,32 @@ def run_connection():
     while True:
 
        # input message
-        user_input = input("Enter commands: ")
+        user_input = str(input("Enter commands: "))
 
         # check if there is any input, if not break
-        if user_input != "":
-            print("sending....")
+        if user_input == "help":
+            print ('''commands:
+            listdir
+            user
+            systeminfo
+            pwd
+            upload
+            download
+            shell
+            clear
+            ''')
+            continue
 
         elif user_input == "exit":
+            client_connection.send(user_input.encode()[:2048])
             break
-
-        elif user_input == Keyboard.Interrupt:
-            client_connection.close()
-            break
-
+        elif user_input in simple_cmd:
+            print("sending...")
         else:
             print ("No input was entered")
             os.system('cls' if os.name == 'nt' else 'clear')
             print("please enter a command")
+            continue
 
 
         client_connection.send(user_input.encode()[:2048])
@@ -42,7 +54,7 @@ def run_connection():
         response = response.decode("utf-8")
 
         # break out of loop when server sends closed in response
-        if response.lower == "closed":
+        if response.lower == "exit":
             break
 
         print(f"{response}")
