@@ -1,19 +1,17 @@
-#from socket import socket, AF_INET, SOCK_DGRAM
-import socket, os
+from socket import socket, AF_INET, SOCK_STREAM
+from os import system, name
 
 # IP & port of the server
 
-
-
 def run_connection():
 
-    simple_cmd = ["listdir", "user", "systeminfo", "pwd", "upload", "download", "shell", "clear"]
+    simple_cmd = ["listdir", "user", "sysinfo", "pwd", "upload", "download", "shell", "clear"]
 
     server_ip = "127.0.0.1" # replace with server IP
     port = 64780 # replace with server port
 
     # establish connection
-    client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_connection = socket(AF_INET, SOCK_STREAM)
     client_connection.connect((server_ip, port))
 
     while True:
@@ -26,26 +24,23 @@ def run_connection():
             print ('''commands:
             listdir
             user
-            systeminfo
+            sysinfo
             pwd
             upload
             download
             shell
-            clear
             ''')
             continue
-
-        elif user_input == "exit":
+        elif user_input == "exitserver":
             client_connection.send(user_input.encode()[:2048])
             break
         elif user_input in simple_cmd:
             print("sending...")
         else:
             print ("No input was entered")
-            os.system('cls' if os.name == 'nt' else 'clear')
+            system('cls' if name == 'nt' else 'clear')
             print("please enter a command")
             continue
-
 
         client_connection.send(user_input.encode()[:2048])
         print("command send")
