@@ -1,0 +1,58 @@
+name: Release Binaries
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install pyinstaller
+
+    - name: Build Windows binary
+      run: pyinstaller --onefile --distpath dist/windows server.py
+      if: runner.os == 'Windows'
+
+    - name: Build Linux binary
+      run: pyinstaller --onefile --distpath dist/linux server.py
+      if: runner.os == 'Linux'
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v1.0.0
+        release_name: Release v1.0.0
+        body: |
+          Binary releases for Windows and Linux
+        draft: false
+        prerelease: false
+
+    - name: Upload Windows binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-binaries
+        path: dist/windows
+
+    - name: Upload Linux binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-binaries
+        path: dist/linux
