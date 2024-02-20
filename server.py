@@ -9,6 +9,9 @@ connection = False
 #if proc_check():
 #    os.exit(0)
 
+motivationalQuote="Be a chad, use a RAT"
+print(motivationalQuote)
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind(('', port))
     s.listen(2)
