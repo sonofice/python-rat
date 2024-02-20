@@ -25,11 +25,11 @@ jobs:
       run: pip install pyinstaller
 
     - name: Build Windows binary
-      run: pyinstaller --onefile --distpath dist/windows client.py
+      run: pyinstaller --onefile --distpath dist/windows server.py
       if: runner.os == 'Windows'
 
     - name: Build Linux binary
-      run: pyinstaller --onefile --distpath dist/linux client.py
+      run: pyinstaller --onefile --distpath dist/linux server.py
       if: runner.os == 'Linux'
 
     - name: Create Release
