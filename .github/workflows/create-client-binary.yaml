@@ -1,0 +1,39 @@
+name: Build Binaries
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install pyinstaller
+
+    - name: Build Windows binary
+      run: pyinstaller --onefile --distpath dist/windows client.py
+      if: runner.os == 'Windows'
+
+    - name: Build Linux binary
+      run: pyinstaller --onefile --distpath dist/linux client.py
+      if: runner.os == 'Linux'
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: binaries
+        path: dist
